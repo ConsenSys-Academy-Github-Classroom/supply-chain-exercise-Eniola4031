@@ -7,13 +7,23 @@ contract SupplyChain {
   address public owner;
 
   // <skuCount>
-  uint public skuCounter;
+  uint public skuCount;
 
   // <items mapping>
 
   // <enum State: ForSale, Sold, Shipped, Received>
-
+enum State{ForSale, Sold, Shipped, Received}
   // <struct Item: name, sku, price, state, seller, and buyer>
+
+  struct ItemStruct{
+    bytes32 name;
+    uint sku;
+    uint price;
+    bytes32 seller;
+    bytes32 buyer;
+
+
+  }
   
   /* 
    * Events
