@@ -16,12 +16,12 @@ enum State{ForSale, Sold, Shipped, Received}
   // <struct Item: name, sku, price, state, seller, and buyer>
 
   struct ItemStruct{
-    bytes32 name;
+    string name;
     uint sku;
     uint price;
-    bytes32 seller;
-    bytes32 buyer;
-
+    State state;
+    address seller;
+    address buyer;
 
   }
   
@@ -131,7 +131,7 @@ enum State{ForSale, Sold, Shipped, Received}
   function receiveItem(uint sku) public {}
 
   // Uncomment the following code block. it is needed to run tests
-  /* function fetchItem(uint _sku) public view */ 
+   function fetchItem(uint _sku) public view 
   /*   returns (string memory name, uint sku, uint price, uint state, address seller, address buyer) */ 
   /* { */
   /*   name = items[_sku].name; */
