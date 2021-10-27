@@ -9,9 +9,8 @@ contract SupplyChain {
   // <skuCount>
   uint public skuCount;
 
-  // <items mapping>
-  mapping (string =>ItemStruct )itemToName;
-  mapping (uint =>ItemStruct )itemToPrice;
+  // <ItemStruct mapping>
+  mapping (uint =>ItemStruct)itemToPrice;
 
   // <enum State: ForSale, Sold, Shipped, Received>
 enum State{ForSale, Sold, Shipped, Received}
@@ -22,8 +21,8 @@ enum State{ForSale, Sold, Shipped, Received}
     uint sku;
     uint price;
     State state;
-    address seller;
-    address buyer;
+    address payable seller;
+    address payable buyer;
 
   }
   
@@ -32,16 +31,16 @@ enum State{ForSale, Sold, Shipped, Received}
    */
 
   // <LogForSale event: sku arg>
-  event LogForSale(string name, uint price);
+  event LogForSale(uint _sku);
 
   // <LogSold event: sku arg>
-  event LogSold(uint item);
+  event LogSold(uint _sku);
 
   // <LogShipped event: sku arg>
-  event LogShipped(State state);
+  event LogShipped(uint _sku);
 
   // <LogReceived event: sku arg>
-  event LogReceived(State state);
+  event LogReceived(uint _sku);
 
 
   /* 
@@ -52,7 +51,7 @@ enum State{ForSale, Sold, Shipped, Received}
 
   // <modifier: isOwner
   modifier isOwner {
-     require (msg.sender == Owner);
+     require (msg.sender == owner, "You are not the owner");
       _;
    }
 
@@ -70,9 +69,9 @@ enum State{ForSale, Sold, Shipped, Received}
   modifier checkValue(uint _sku) {
     //refund them after pay for item (why it is before, _ checks for logic before func)
     _;
-     uint _price = items[_sku].price;
+     uint _price = ItemStruct[_sku].price;
      uint amountToRefund = msg.value - _price;
-     items[_sku].buyer.transfer(amountToRefund);
+     ItemStruct[_sku].buyer.transfer(amountToRefund);
   }
 
   // For each of the following modifiers, use what you learned about modifiers
@@ -83,14 +82,31 @@ enum State{ForSale, Sold, Shipped, Received}
   // that an Item is for sale. Hint: What item properties will be non-zero when
   // an Item has been added?
 
-  // modifier forSale
-  // modifier sold(uint _sku) 
-  // modifier shipped(uint _sku) 
-  // modifier received(uint _sku) 
+  modifier forSale{
+    require(ItemStruct[_sku].State == State.Forsale, "State is not ForSale!");
+    require(ItemStruct[_sku].seller != address(0),"seller address is 0x00");
+
+    _;
+  }
+  modifier sold(uint _sku) {
+require(ItemStruct[_sku].state == State.Sold, "state is not sold");
+_;
+  }
+  modifier shipped(uint _sku){
+require(ItemStruct[_sku].state == State.Shipped, "state is not shipped");
+_;
+  } 
+  modifier received(uint _sku) {
+require(ItemStruct[_sku].state == State.Received, "state is not sold");
+    _;
+
+  }
 
   constructor() public {
     // 1. Set the owner to the transaction sender
+    owner = msg.sender;
     // 2. Initialize the sku count to 0. Question, is this necessary?
+    skuCount = 0;
   }
 
   function addItem(string memory _name, uint _price) public returns (bool) {
@@ -100,7 +116,7 @@ enum State{ForSale, Sold, Shipped, Received}
     // 4. return true
 
     //hint:
-    items[skuCount] = Item({
+    ItemStruct[skuCount] = itemToPrice({
      name: _name, 
      sku: skuCount, 
      price: _price, 
@@ -125,7 +141,12 @@ enum State{ForSale, Sold, Shipped, Received}
   //    - check the value after the function is called to make 
   //      sure the buyer is refunded any excess ether sent. 
   // 6. call the event associated with this function!
-  function buyItem(uint sku) public {}
+  function buyItem(uint sku) public payable
+    forsale(sku)
+    paidEnough(ItemStruct[sku].price)
+checkValue(sku){
+  bool sendValue
+  }
 
   // 1. Add modifiers to check:
   //    - the item is sold already 
@@ -144,12 +165,12 @@ enum State{ForSale, Sold, Shipped, Received}
   // Uncomment the following code block. it is needed to run tests
    function fetchItem(uint _sku) public view  returns (string memory name, uint sku, uint price, uint state, address seller, address buyer) 
   { 
-    name = items[_sku].name; 
-    sku = items[_sku].sku; 
-     price = items[_sku].price; 
-     state = uint(items[_sku].state);
-     seller = items[_sku].seller; 
-    buyer = items[_sku].buyer; 
+    name = ItemStruct[_sku].name; 
+    sku = ItemStruct[_sku].sku; 
+     price = ItemStruct[_sku].price; 
+     state = uint(ItemStruct[_sku].state);
+     seller = ItemStruct[_sku].seller; 
+    buyer = ItemStruct[_sku].buyer; 
     return (name, sku, price, state, seller, buyer); 
    }
 }
